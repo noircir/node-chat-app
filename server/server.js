@@ -19,27 +19,16 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
 	console.log('NEW USER CONNECTED');
 
-	socket.emit('newEmail', {
-		from: "mike@example.com",
-		text: "Hey, what is going on.",
-		createdAt: 123
-	});
-
-	// event listener for when client sends an email
-	socket.on('createEmail', (newEmail) => {
-		console.log('Client sent email: ', newEmail);
-	});
-
-	// pushing SMS
-	socket.emit('newMessage', {
-		from: "sigourney",
-		text: "What's up?",
-		createdAt: 123789
-	});
-
 	// event listener for when client sends an SMS
-	socket.on('createMessage', (sms) => {
-		console.log('Client sent message: ', sms);
+	socket.on('createMessage', (message) => {
+		console.log('Client sent message: ', message);
+
+		// broadcasting message to every connected user
+		io.emit('newMessage', {
+			from: message.from,
+			text: message.text,
+			createdAt: new Date().getTime()
+		});
 	});
 
 	socket.on('disconnect', (socket) => {
