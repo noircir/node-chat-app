@@ -19,12 +19,33 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
 	console.log('NEW USER CONNECTED');
 
+	// Welcome message to the joined person, only once on connection
+	socket.emit('newMessage', {
+		from: 'Admin',
+		text: 'Welcome to the chat app',
+		createdAt: new Date().getTime()
+	});
+
+	// Broadcast message that a user joined (the user won't get it)
+	socket.broadcast.emit('newMessage', {
+		from: 'Admin',
+		text: 'New user joined',
+		createdAt: new Date().getTime()
+	});
+
 	// event listener for when client sends an SMS
 	socket.on('createMessage', (message) => {
 		console.log('Client sent message: ', message);
 
 		// broadcasting message to every connected user
-		io.emit('newMessage', {
+		// io.emit('newMessage', {
+		// 	from: message.from,
+		// 	text: message.text,
+		// 	createdAt: new Date().getTime()
+		// });
+
+		// broadcasting to everyone but the sender
+		socket.broadcast.emit('newMessage', {
 			from: message.from,
 			text: message.text,
 			createdAt: new Date().getTime()

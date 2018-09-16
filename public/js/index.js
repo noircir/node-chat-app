@@ -5,8 +5,8 @@ socket.on('connect', function () {
 });
 
 // receiving pushed SMS
-socket.on('newMessage', function(sms) {
-	console.log('Got new message', sms);
+socket.on('newMessage', function(message) {
+	console.log('Got new message', message);
 });
 
 socket.on('disconnect', function () {
