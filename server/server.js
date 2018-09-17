@@ -29,18 +29,15 @@ io.on('connection', (socket) => {
 	socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
 	// event listener for when client sends a message
-	socket.on('createMessage', (message) => {
+	socket.on('createMessage', (message, callback) => {
 		console.log('Client sent message: ', message);
 
 		// broadcasting message to every connected user
-		// io.emit('newMessage', {
-		// 	from: message.from,
-		// 	text: message.text,
-		// 	createdAt: new Date().getTime()
-		// });
+		io.emit('newMessage', generateMessage(message.from, message.text));
+		callback(`Acknowledgement from the server. I received your message from: ${message.from} text: ${message.text}`);
 
 		// broadcasting to everyone but the sender
-		socket.broadcast.emit('newMessage', generateMessage(message.from, message.text));
+		// socket.broadcast.emit('newMessage', generateMessage(message.from, message.text));
 	});
 
 	socket.on('disconnect', (socket) => {
