@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
 
 		// broadcasting message to every connected user
 		io.emit('newMessage', generateMessage(message.from, message.text));
-		callback(`Acknowledgement from the server. I received your message from: ${message.from} text: ${message.text}`);
+		callback();
 
 		// broadcasting to everyone but the sender
 		// socket.broadcast.emit('newMessage', generateMessage(message.from, message.text));
