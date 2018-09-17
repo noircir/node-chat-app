@@ -1,5 +1,5 @@
 var expect = require('expect');
-var {generateMessage} = require('./message');
+var {generateMessage, generateLocationMessage} = require('./message');
 
 // 'describe', 'it should' come from Mocha.
 // 'request' comes from supertest (high-level abstraction for testing http).
@@ -14,5 +14,20 @@ describe('generateMessage', () => {
 
 		expect(typeof msg.createdAt).toBe('number');
 		expect(msg).toMatchObject({from, text});
+	});
+});
+
+describe('generateLocationMessage', () => {
+	it('should generate the correct location object', () => {
+
+		var from = 'Hannah Gadsby';
+		var latitude = 12;
+		var longitude = -12;
+		var url = 'https://www.google.com/maps?q=12,-12'
+
+		var msg = generateLocationMessage(from, latitude, longitude);
+
+		expect(typeof msg.createdAt).toBe('number');
+		expect(msg).toMatchObject({from, url});
 	});
 });

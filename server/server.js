@@ -4,7 +4,7 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocationMessage} = require('./utils/message');
 
 // join allows to go straight to the directory
 const publicPath = path.join(__dirname, '../public');
@@ -28,9 +28,13 @@ io.on('connection', (socket) => {
 	// Broadcast message that a user joined (the user won't get it)
 	socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
+	//========================================================
+	// Creating message for the chat form
+	//========================================================
+
 	// event listener for when client sends a message
 	socket.on('createMessage', (message, callback) => {
-		console.log('Client sent message: ', message);
+		console.log('Client asked to create message: ', message);
 
 		// broadcasting message to every connected user
 		io.emit('newMessage', generateMessage(message.from, message.text));
@@ -38,6 +42,17 @@ io.on('connection', (socket) => {
 
 		// broadcasting to everyone but the sender
 		// socket.broadcast.emit('newMessage', generateMessage(message.from, message.text));
+	});
+
+	//========================================================
+	// Creating message for the location query
+	//========================================================
+
+	socket.on('createLocationMessage', (coords) => {
+		console.log('Client asked to send location coords: ', coords);
+		// io.emit('newLocationMessage', generateLocationMessage('Admin', `${message.latitude}, ${message.longitude}`));
+		io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+
 	});
 
 	socket.on('disconnect', (socket) => {
