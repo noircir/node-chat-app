@@ -1,5 +1,33 @@
 var socket = io();
 
+function scrollToBottom() {
+	// Selectors
+	var messages = jQuery('#messages');
+	// the last message, added just before 'scrollToBottom' was called
+	var newMessage = messages.children('li:last-child');
+
+	//Heights
+	// prop method is a cross-browser way to fetch properties
+
+	var clientHeight = messages.prop('clientHeight');
+	var scrollTop = messages.prop('scrollTop');
+	var scrollHeight = messages.prop('scrollHeight');
+	// calculates the message height taking into account padding
+	var newMessageHeight = newMessage.innerHeight();
+	// height of the previous child, i.e second-to-last message
+	// This is needed for when the chat is slightly scrolled at the second last message
+	// that is, the user has not intended to look deep into chat archive
+	var lastMessageHeight = newMessage.prev().innerHeight();
+
+	if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+		// setting scrollTop to the whole height of the container, 
+		//which means we are at the very bottom of the messages
+		messages.scrollTop(scrollHeight);
+		console.log('should scroll ');
+	};
+
+};
+
 socket.on('connect', function () {
 	console.log("Connected to server");
 });
@@ -45,6 +73,7 @@ socket.on('newMessage', function (message) {
 	});
 
 	jQuery('#messages').append(html);
+	scrollToBottom();
 
 	// var li = jQuery('<li></li>');
 	// li.text(`${message.from}  ${formattedTime}: ${message.text}`);
@@ -100,6 +129,7 @@ socket.on('newLocationMessage', function (message) {
 	});
 
 	jQuery('#messages').append(html);
+	scrollToBottom();
 
 	// var li = jQuery('<li></li>');
 
