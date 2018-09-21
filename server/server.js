@@ -5,6 +5,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
+const {isRealString} = require('./utils/validation');
 
 // join allows to go straight to the directory
 const publicPath = path.join(__dirname, '../public');
@@ -22,11 +23,27 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
 	console.log('NEW USER CONNECTED');
 
-	// Welcome message to the joined person, only once on connection
-	socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+	// Joining a chat room
+	socket.on('join', (params, callback) => {
+		if (!isRealString(params.name) || !isRealString(params.room)) {
+			callback('Name and name room are required.');
+		} 
 
-	// Broadcast message that a user joined (the user won't get it)
-	socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+		socket.join(params.room);
+		// socket.leave('The Office Fans');
+
+		// io.emit -> io.to('The Office Fans')
+		//socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emit
+		//socket.emit
+
+		// Welcome message to the joined person, only once on connection
+		socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+
+		// Broadcast message that a user joined (the user won't get it)
+		socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+
+		callback();
+	});
 
 	//========================================================
 	// Creating message for the chat form
