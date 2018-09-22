@@ -6,6 +6,7 @@ const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
 
 // join allows to go straight to the directory
 const publicPath = path.join(__dirname, '../public');
@@ -14,19 +15,18 @@ var app = express();
 var server = http.createServer(app);
 // passing server, getting back websocket server
 var io = socketIO(server);
-// var message = require()
+var users = new Users();
 
 app.use(express.static(publicPath));
 
 // register an event listener to listen for connection
 // it is like a tunnel 
 io.on('connection', (socket) => {
-	console.log('NEW USER CONNECTED');
 
 	// Joining a chat room
 	socket.on('join', (params, callback) => {
 		if (!isRealString(params.name) || !isRealString(params.room)) {
-			callback('Name and name room are required.');
+			return callback('Name and name room are required.');
 		} 
 
 		socket.join(params.room);
@@ -35,6 +35,11 @@ io.on('connection', (socket) => {
 		// io.emit -> io.to('The Office Fans')
 		//socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emit
 		//socket.emit
+
+		users.removeUser(socket.id);
+		users.addUser(socket.id, params.name, params.room);
+
+		io.to(params.room).emit('updateUserList', users.getUserList(params.room));
 
 		// Welcome message to the joined person, only once on connection
 		socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
@@ -72,8 +77,13 @@ io.on('connection', (socket) => {
 
 	});
 
-	socket.on('disconnect', (socket) => {
-		console.log('USER DISCONNECTED');
+	socket.on('disconnect', () => {
+		var user = users.removeUser(socket.id);
+
+		if (user) {
+			io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+			io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left the room.`));
+		}
 	});
 });
 
