@@ -50,31 +50,38 @@ io.on('connection', (socket) => {
 		callback();
 	});
 
-	//========================================================
-	// Creating message for the chat form
-	//========================================================
+	//===================================================================
+	// Create message with the info that came from the chat form.
+	// Send to the appropriate room with the name of the sender.
+	//===================================================================
 
 	// event listener for when client sends a message
 	socket.on('createMessage', (message, callback) => {
-		console.log('Client asked to create message: ', message);
+		var user = users.getUser(socket.id);
 
-		// broadcasting message to every connected user
-		io.emit('newMessage', generateMessage(message.from, message.text));
+		if (user && isRealString(message.text)) {
+			
+			io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+		}
+
 		callback();
 
 		// broadcasting to everyone but the sender
 		// socket.broadcast.emit('newMessage', generateMessage(message.from, message.text));
 	});
 
-	//========================================================
-	// Creating message for the location query
-	//========================================================
+	//===========================================================
+	// Create message for the location query.
+	// Send to the appropriate room with the name of the sender.
+	//===========================================================
 
 	socket.on('createLocationMessage', (coords) => {
-		console.log('Client asked to send location coords: ', coords);
-		// io.emit('newLocationMessage', generateLocationMessage('Admin', `${message.latitude}, ${message.longitude}`));
-		io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+		var user = users.getUser(socket.id);
 
+		if (user) {
+			// io.emit('newLocationMessage', generateLocationMessage('Admin', `${message.latitude}, ${message.longitude}`));
+			io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+		}
 	});
 
 	socket.on('disconnect', () => {

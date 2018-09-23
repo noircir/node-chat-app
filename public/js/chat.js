@@ -1,5 +1,10 @@
 var socket = io();
 
+//=======================================================
+// Always scroll up to show new message on the bottom, 
+// but don't scroll when user reads history of messages
+//=======================================================
+
 function scrollToBottom() {
 	// Selectors
 	var messages = jQuery('#messages');
@@ -28,8 +33,12 @@ function scrollToBottom() {
 
 };
 
+//=======================================================
+// Capturing the name and the room of the joining person
+//=======================================================
+
 socket.on('connect', function () {
-	console.log("Connected to server");
+	// console.log("Connected to server");
 
 	var params = jQuery.deparam(window.location.search);
 
@@ -46,6 +55,11 @@ socket.on('connect', function () {
 socket.on('disconnect', function () {
 	console.log('Disconnected from server');
 });
+
+//===============================================
+// Redrawing the list of users in the sidebar
+// when somene joins or leaves the chat room
+//===============================================
 
 socket.on('updateUserList', function (users) {
 	console.log('Users list', users);
@@ -72,7 +86,6 @@ jQuery('#message-form').on('submit', function (e) {
 	var messageTextbox = jQuery('[name=message]');
 
 	socket.emit('createMessage', {
-		from: 'User',
 		text: messageTextbox.val()
 	}, function () {
 		messageTextbox.val('');
